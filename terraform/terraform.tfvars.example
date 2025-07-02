@@ -1,0 +1,5 @@
+aws_region = "us-east-1"
+genesys_client_id = "your-client-id"
+genesys_client_secret = "your-client-secret"
+management_unit_id = "c3d19291-a74a-4a20-9e12-61a88bbddaa9"
+pre_break_presence_id = "8d2f0e0a-8750-4a31-bcf2-f524c65255ca"

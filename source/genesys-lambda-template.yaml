@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Genesys Agent Presence Updater - Runs every 15 minutes'
+
+Parameters:
+  GenesysClientId:
+    Type: String
+    Description: 'Genesys Cloud Client ID'
+  GenesysClientSecret:
+    Type: String
+    NoEcho: true
+    Description: 'Genesys Cloud Client Secret'
+  ManagementUnitId:
+    Type: String
+    Default: 'c3d19291-a74a-4a20-9e12-61a88bbddaa9'
+    Description: 'Genesys Management Unit ID'
+  PreBreakPresenceId:
+    Type: String
+    Default: '8d2f0e0a-8750-4a31-bcf2-f524c65255ca'
+    Description: 'Pre-break presence definition ID'
+
+Resources:
+  GenesysLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: '/aws/lambda/genesys-presence-updater'
+      RetentionInDays: 14
+
+  GenesysFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: 'genesys-presence-updater'
+      Runtime: nodejs18.x
+      Handler: lambda-genesys.handler
+      Code: genesys-lambda.zip
+      Environment:
+        Variables:
+          GENESYS_CLOUD_CLIENT_ID: !Ref GenesysClientId
+          GENESYS_CLOUD_CLIENT_SECRET: !Ref GenesysClientSecret
+          MANAGEMENT_UNIT_ID: !Ref ManagementUnitId
+          PRE_BREAK_PRESENCE_ID: !Ref PreBreakPresenceId
+      Role: !GetAtt LambdaRole.Arn
+      Timeout: 60
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  Every15MinutesSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: 'Runs Genesys presence updater every 15 minutes'
+      ScheduleExpression: 'rate(15 minutes)'
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt GenesysFunction.Arn
+          Id: 'GenesysTarget'
+
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GenesysFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt Every15MinutesSchedule.Arn
+
+Outputs:
+  FunctionName:
+    Description: 'Lambda function name'
+    Value: !Ref GenesysFunction
+  ScheduleArn:
+    Description: 'EventBridge schedule ARN'
+    Value: !GetAtt Every15MinutesSchedule.Arn

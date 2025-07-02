@@ -1,0 +1,16 @@
+{
+  "name": "agent-adherence-tracker",
+  "version": "1.0.0",
+  "description": "Agent utilization and adherence tracking system",
+  "main": "test.js",
+  "scripts": {
+    "start": "node test.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "luxon": "^3.6.1",
+    "purecloud-platform-client-v2": "^225.0.0"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "genesys-lambda",
+  "version": "1.0.0",
+  "description": "Genesys presence updater Lambda",
+  "main": "lambda-genesys.js",
+  "dependencies": {
+    "purecloud-platform-client-v2": "^225.0.0",
+    "luxon": "^3.0.0"
+  }
+}
